@@ -2,7 +2,7 @@ import fs from 'fs'
 import imagekit from '../configs/imageKit.js';
 import Blog from '../models/Blog.js';
 import Comment from '../models/Comment.js';
-import main from '../configs/gemini.js';
+import generateWithHF from '../configs/huggingface.js';
 
 export const addBlog = async (req, res)=>{
     try {
@@ -114,12 +114,22 @@ export const getBlogComments = async (req, res) =>{
     }
 }
 
-export const generateContent = async (req, res)=>{
-    try {
-        const {prompt} = req.body;
-        const content = await main(prompt + ' Generate a blog content for this topic in simple text format')
-        res.json({success: true, content})
-    } catch (error) {
-        res.json({success: false, message: error.message})
-    }
-}
+import fetch from "node-fetch";
+
+export const generateContent = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const content = await generateWithHF(prompt);
+
+    res.json({ success: true, content });
+
+  } catch (error) {
+    console.log("HF ERROR:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Free AI service error. Please try again later."
+    });
+  }
+};
